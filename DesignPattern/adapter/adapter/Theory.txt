@@ -1,0 +1,11 @@
+The adapter design pattern falls under the category of a structural 
+design pattern that lets incompatible objects collaborate. 
+
+It acts as a wrapper between 2 different objects. 
+
+The adapter catches the call for one object and transforms them 
+to be recognizable by the second object.
+
+
+https://www.interviewbit.com/design-patterns-interview-questions/#adapter-design-pattern
+

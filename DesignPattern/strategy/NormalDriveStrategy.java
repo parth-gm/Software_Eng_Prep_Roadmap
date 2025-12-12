@@ -1,0 +1,9 @@
+package strategy4;
+
+public class NormalDriveStrategy implements DriveStrategy {
+
+	public void drive() {
+		System.out.println("NormalDriveStrategy");
+	}
+
+}

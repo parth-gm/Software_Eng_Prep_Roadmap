@@ -1,0 +1,20 @@
+Provide class which will limit access to another class
+
+You may do this for reasons
+
+1. Security Resons
+2. Object is intensive to create
+3. To Access from remote location (Based on what fields are available for
+   outside access)
+
+
+Example of ATMProxy over ATMClass 
+Which provide limited access of data or methods to manager
+ex. getATMState() and getCashInATM()
+Only above 2 methods are part of proxy class. Manager should not able to view or write
+confidential data members or methods.
+
+Decouples the Validation, Security check on resource from
+Consumer Code.
+
+https://www.newthinktank.com/2012/10/proxy-design-pattern-tutorial/

@@ -1,0 +1,186 @@
+✅ 1. ReentrantLock (Simple Explanation)
+Meaning
+
+A ReentrantLock allows the same thread to acquire the lock multiple times without blocking itself.
+
+This is called reentrancy.
+
+Example
+ReentrantLock lock = new ReentrantLock();
+
+void outer() {
+    lock.lock();
+    try {
+        System.out.println("Outer acquired");
+        inner(); // calling another lock method
+    } finally {
+        lock.unlock();
+    }
+}
+
+void inner() {
+    lock.lock();  // same thread acquires again
+    try {
+        System.out.println("Inner acquired");
+    } finally {
+        lock.unlock(); // must unlock twice
+    }
+}
+
+Why needed?
+
+Because without reentrancy, the thread will block itself while calling another method that also uses the same lock.
+
+❗ 2. What happens with a NON-reentrant lock?
+
+If a lock is not reentrant, and the same thread tries to acquire it again, it will wait forever.
+
+This causes a self-deadlock.
+
+❌ Example of deadlock with non-reentrant lock (pseudocode)
+NormalLock lock = new NormalLock();
+
+void outer() {
+    lock.lock();    // acquired
+    inner();        // inner also tries same lock
+    lock.unlock();
+}
+
+void inner() {
+    lock.lock();    // tries again → WAIT
+    // deadlock: thread is waiting for itself
+    lock.unlock();
+}
+
+Deadlock Reason
+
+Thread holds the lock →
+Thread tries to acquire the same lock again →
+Lock does not allow the same thread twice →
+Thread waits forever → deadlock.
+
+ReentrantLock avoids this problem.
+
+✅ 3. synchronized (Simple Explanation)
+Meaning
+
+synchronized is Java’s built-in lock that:
+
+Allows one thread at a time
+
+Automatically releases on block exit
+
+Is also reentrant (same thread can enter again)
+
+Example
+public synchronized void outer() {
+    inner();  // allowed, method is also synchronized
+}
+
+public synchronized void inner() {
+    // allowed due to reentrancy
+}
+
+Important
+
+synchronized is naturally reentrant, just like ReentrantLock.
+
+✅ 4. Condition (Simple Explanation)
+
+A Condition is like having multiple wait/notify groups for a single lock.
+
+You create conditions like this:
+
+private ReentrantLock lock = new ReentrantLock();
+private Condition notEmpty = lock.newCondition();
+private Condition notFull = lock.newCondition();
+
+Why two conditions?
+
+notFull → producers wait when buffer is full
+
+notEmpty → consumers wait when buffer is empty
+
+Each condition has its own:
+
+await() (like wait)
+
+signal() (like notify)
+
+signalAll() (like notifyAll)
+
+⭐ Full Producer–Consumer Example (with Conditions)
+public class BoundedQueue {
+    private final int[] items = new int[5];
+    private int count = 0, putIndex = 0, takeIndex = 0;
+
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition notEmpty = lock.newCondition();
+    private final Condition notFull = lock.newCondition();
+
+    public void put(int value) throws InterruptedException {
+        lock.lock();
+        try {
+            while (count == items.length) {
+                notFull.await();   // wait for space
+            }
+            items[putIndex] = value;
+            putIndex = (putIndex + 1) % items.length;
+            count++;
+            notEmpty.signal();      // wake consumer
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int take() throws InterruptedException {
+        lock.lock();
+        try {
+            while (count == 0) {
+                notEmpty.await();   // wait for item
+            }
+            int val = items[takeIndex];
+            takeIndex = (takeIndex + 1) % items.length;
+            count--;
+            notFull.signal();       // wake producer
+            return val;
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+
+Summary (Copy-Friendly)
+ReentrantLock
+
+Same thread can lock multiple times
+
+Must unlock same number of times
+
+Avoids self-deadlock
+
+Supports tryLock, fairness, and multiple Conditions
+
+Normal non-reentrant lock
+
+Thread locks
+
+Same thread tries locking again → waits for itself
+
+❌ Self-deadlock occurs
+
+synchronized
+
+Built-in reentrant lock
+
+Auto unlocks
+
+Only one wait/notify queue
+
+Condition
+
+Multiple wait queues
+
+notEmpty for consumers
+
+notFull for producers
