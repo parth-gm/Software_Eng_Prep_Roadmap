@@ -18,7 +18,7 @@ public abstract class Middleware {
 
     public boolean checkNext(String email, String password){
         if(this.nextMiddleware==null){
-            return true;
+            return check(email, password);
         }
         return this.nextMiddleware.check(email, password);
     }
